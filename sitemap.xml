@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://charlieblog.top/2021/10/20/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C(1)/</loc>
+    
+    <lastmod>2021-10-19</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://charlieblog.top/2021/10/17/Java%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0(4)/</loc>
     
     <lastmod>2021-10-16</lastmod>
@@ -59,10 +66,24 @@
     <priority>0.6</priority>
   </url>
   
+  <url>
+    <loc>https://charlieblog.top/tags/%E4%B8%93%E4%B8%9A%E8%AF%BE/</loc>
+    <lastmod>2021-10-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
 
   
   <url>
     <loc>https://charlieblog.top/categories/Java/</loc>
+    <lastmod>2021-10-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://charlieblog.top/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/</loc>
     <lastmod>2021-10-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
