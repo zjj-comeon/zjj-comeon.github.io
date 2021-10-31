@@ -1,0 +1,357 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>临界区问题 | CodeSpace</title><meta name="keywords" content="操作系统"><meta name="author" content="Charlie"><meta name="copyright" content="Charlie"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="在多进程程序中，我们不可避免地要去更新公共变量，而我们无法控制是否存在同时多个进程读写的问题，因此需要解决这种临界区问题。 解决这种问题的一般模式是： 123456do&amp;#123;    &#x2F;&#x2F;进入区    &#x2F;&#x2F;临界区    &#x2F;&#x2F;退出区    &#x2F;&#x2F;剩余区&amp;#125;while(true);  在我们设计临界区的解决方案时，需要满足三条要求：  互斥：同一时间只允许一个进程在临界区对变量操作。 进步：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="临界区问题">
+<meta property="og:url" content="https://charlieblog.top/2021/10/31/%E4%B8%B4%E7%95%8C%E5%8C%BA%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="CodeSpace">
+<meta property="og:description" content="在多进程程序中，我们不可避免地要去更新公共变量，而我们无法控制是否存在同时多个进程读写的问题，因此需要解决这种临界区问题。 解决这种问题的一般模式是： 123456do&amp;#123;    &#x2F;&#x2F;进入区    &#x2F;&#x2F;临界区    &#x2F;&#x2F;退出区    &#x2F;&#x2F;剩余区&amp;#125;while(true);  在我们设计临界区的解决方案时，需要满足三条要求：  互斥：同一时间只允许一个进程在临界区对变量操作。 进步：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://charlieblog.top/2021/10/31/%E4%B8%B4%E7%95%8C%E5%8C%BA%E9%97%AE%E9%A2%98/Best-OS-For-Gaming.jpg">
+<meta property="article:published_time" content="2021-10-31T11:20:50.000Z">
+<meta property="article:modified_time" content="2021-10-31T16:18:16.997Z">
+<meta property="article:author" content="Charlie">
+<meta property="article:tag" content="操作系统">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://charlieblog.top/2021/10/31/%E4%B8%B4%E7%95%8C%E5%8C%BA%E9%97%AE%E9%A2%98/Best-OS-For-Gaming.jpg"><link rel="shortcut icon" href="/img/chevron-double-up.svg"><link rel="canonical" href="https://charlieblog.top/2021/10/31/%E4%B8%B4%E7%95%8C%E5%8C%BA%E9%97%AE%E9%A2%98/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '临界区问题',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-11-01 00:18:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data is-center"><div class="data-item"><a href="/archives/"><div class="headline">文章</div><div class="length-num">19</div></a></div><div class="data-item"><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a></div><div class="data-item"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 历史</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/2021/10/31/%E4%B8%B4%E7%95%8C%E5%8C%BA%E9%97%AE%E9%A2%98/Best-OS-For-Gaming.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">CodeSpace</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 历史</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">临界区问题</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon fas fa-history"></i><span class="post-meta-label">更新于</span><time datetime="2021-10-31T16:18:16.997Z" title="更新于 2021-11-01 00:18:16">2021-11-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="临界区问题"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>在多进程程序中，我们不可避免地要去更新公共变量，而我们无法控制是否存在同时多个进程读写的问题，因此需要解决这种<strong>临界区问题</strong>。</p>
+<p>解决这种问题的一般模式是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    <span class="comment">//进入区</span></span><br><span class="line">    <span class="comment">//临界区</span></span><br><span class="line">    <span class="comment">//退出区</span></span><br><span class="line">    <span class="comment">//剩余区</span></span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<p>在我们设计临界区的解决方案时，需要满足三条要求：</p>
+<ol>
+<li><strong>互斥</strong>：同一时间只允许一个进程在临界区对变量操作。</li>
+<li><strong>进步</strong>：如果临界区没有进程在执行，且存在进程需要进入临界区，那么我们一定需要在有限的时间内允许进程进入临界区。</li>
+<li><strong>有限等待</strong>：不可以让一个想要进入临界区的进程无限等待。</li>
+</ol>
+<h2 id="Peterson解决方案"><a href="#Peterson解决方案" class="headerlink" title="Peterson解决方案"></a>Peterson解决方案</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> turn;</span><br><span class="line">boolean flag[<span class="number">2</span>];</span><br><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    <span class="comment">//进入区</span></span><br><span class="line">    flag[i] = <span class="literal">true</span>;</span><br><span class="line">    turn = j;</span><br><span class="line">    <span class="keyword">while</span>(flag[j]&amp;&amp;turn == j);</span><br><span class="line">    	<span class="comment">//临界区</span></span><br><span class="line">    . . .</span><br><span class="line">    <span class="comment">//退出区</span></span><br><span class="line">    flag[i] = <span class="literal">false</span>;</span><br><span class="line">    	<span class="comment">//剩余区</span></span><br><span class="line">    . . .</span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<p>turn和flag变量是进程能否进入临界区的标志，当且仅当<code>flag[i]&amp;&amp;turn==i</code>时可以允许进程Pi进入临界区。</p>
+<p>Pi为了进入临界区，首先将flag[i]设置为true，然后设置turn为j，直到Pj完成所有对于临界区的操作之后，轮到Pi进入临界区，Pi完成操作之后，将flag[i]设置为false。</p>
+<ol>
+<li><p>对于 <strong>互斥</strong> 的证明：</p>
+<p>假设存在对多个变量同时操作临界区，那么必然有</p>
+<p><code>(flag[i] ==true &amp;&amp; flag[j] == true)&amp;&amp;(turn == i&amp;&amp;turn == j)</code></p>
+<p>很明显turn不可能存在多个值，假设不成立。互斥得证。</p>
+</li>
+<li><p>对于 <strong>进步</strong> 的证明：</p>
+<p>因为我们只有四个分区，且目前临界区无进程执行，那么存在三类情况：</p>
+<ul>
+<li>进入区存在Pi和Pj两个进程，那么由同一时间turn仅会有一个值可以知道，一定存在一个进程可以跳出while循环进入临界区。</li>
+<li>进入区存在一个进程，退出区和剩余区存在一个进程，等价于情况1</li>
+<li>退出区和剩余区存在两个进程，等价于情况1</li>
+</ul>
+</li>
+<li><p>对于 <strong>有限等待</strong> 的证明：</p>
+<p>互斥性告诉我们，同一时间临界区仅有一个进程，而临界区的代码是可以执行完毕的，因此进入临界区的进程早晚会到达进入区，让另外一个进程进入。</p>
+</li>
+</ol>
+<h2 id="硬件同步（基于locking）"><a href="#硬件同步（基于locking）" class="headerlink" title="硬件同步（基于locking）"></a>硬件同步（基于locking）</h2><h3 id="test-and-set"><a href="#test-and-set" class="headerlink" title="test_and_set()"></a>test_and_set()</h3><p><strong>原子指令</strong>：不会被CPU中断的指令。</p>
+<p>对于硬件的操作指令抽象为函数<code>test_and_set()</code></p>
+<p>我们声明一个布尔变量lock，初始化为false</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">boolean <span class="title">test_and_set</span><span class="params">(boolean *target)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    boolean rv = *target;</span><br><span class="line">    *target = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">return</span> rv;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很简单的一个函数，将传入的参数修改为true，返回旧值。而test_and_set是一条原子指令，不会被CPU拆分执行，也就是三条语句一定紧紧相邻的执行。</p>
+<p>这样通过<code>test_and_set()</code>来实现互斥：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(test_and_set(&amp;lock))</span><br><span class="line">        ;<span class="comment">//do nothing</span></span><br><span class="line">    	<span class="comment">//临界区</span></span><br><span class="line">    lock = <span class="literal">false</span>;</span><br><span class="line">    	<span class="comment">//剩余区</span></span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<p>大概就是这样的：初始lock为false，我们跳出循环，并将之修改为true，然后在我们进入临界区修改的时候，本硬件已经上锁，任何其他进程将无法访问这个硬件。直到我们退出临界区，将lock修改为false，那么才会有下一个进程进入临界区修改硬件。</p>
+<h3 id="compare-and-swap"><a href="#compare-and-swap" class="headerlink" title="compare_and_swap()"></a>compare_and_swap()</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">compare_and_swap</span><span class="params">(<span class="keyword">int</span> *value, <span class="keyword">int</span> expected, <span class="keyword">int</span> new_value)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> temp = *value;</span><br><span class="line">    <span class="keyword">if</span>(*value==expected)</span><br><span class="line">        *value = new_value;</span><br><span class="line">    <span class="keyword">return</span> temp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这同样是一条原子指令，保存传入的value的旧值，如果value和我们所期待的值一样，那么将之修改为new_value，然后返回旧值。</p>
+<p>采用<code>compare_and_swap()</code>实现互斥：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(compare_and_swap(&amp;lock,<span class="number">0</span>,<span class="number">1</span>)!=<span class="number">0</span>)</span><br><span class="line">        ;<span class="comment">//do nothing </span></span><br><span class="line">    	<span class="comment">//临界区</span></span><br><span class="line">    lock = <span class="number">0</span>;</span><br><span class="line">    	<span class="comment">//剩余区</span></span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<p>同样，我们初始化lock为0，紧接着我们发现lock==0，那么函数返回0且将lock修改为1，进入临界区，这个时候lock已经加锁，任何其他进程无法访问，直到该进程退出临界区，将lock修改为0，此时将会开锁。</p>
+<h3 id="改进的test-and-swap算法"><a href="#改进的test-and-swap算法" class="headerlink" title="改进的test_and_swap算法"></a>改进的test_and_swap算法</h3><p>但是很明显以上算法仅仅实现了互斥要求，不满足有限等待。我们改进test_and_set算法，便可以满足。</p>
+<p>我们声明 <code>boolean waiting[n]</code>  <code>boolean lock</code>并初始化为false，算法如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    waiting[i] = <span class="literal">true</span>;</span><br><span class="line">    key = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">while</span>(waiting[i] &amp;&amp; key)</span><br><span class="line">        key = test_and_set(&amp;lock);</span><br><span class="line">    waiting[i] = <span class="literal">false</span>;</span><br><span class="line">    	<span class="comment">//临界区</span></span><br><span class="line">    j = (i + <span class="number">1</span>) % n;</span><br><span class="line">    <span class="keyword">while</span>((j != <span class="number">1</span>) &amp;&amp; !waiting[j])</span><br><span class="line">        j = (j  + <span class="number">1</span>) %n;</span><br><span class="line">    <span class="keyword">if</span>(j == i)</span><br><span class="line">        lock = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">        waiting[j] = <span class="literal">false</span>;</span><br><span class="line">    	<span class="comment">//剩余区</span></span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<p>第一个进程测试lock，key被设置为false，中止while循环，同时将waiting[i]设置为false（注意此时其他所有进程的waiting[j]均为true），在退出临界区之后，我们寻找到第一个正在等待的进程（waiting[j]==true），从i之后一个一个的寻找，如果不存在，那么直到 j = i的时候退出循环，接下来我们判断：如果现在没有进程在等待，那么将锁解开（设置为false），如果存在等待的进程，那么将这个进程的等待状态设置为false使其进入临界区。</p>
+<p><strong>互斥：</strong></p>
+<p>任意时间，因为第一个进程进入后，将自己的waiting设置为false，而其余的所有的进程都需要等待（初始化条件限制），而只有本进程退出后，才会释放锁或者将另外一个进程放入临时区。</p>
+<p><strong>进步：</strong></p>
+<p>从互斥的证明中即可发现一定会 “进步”</p>
+<p><strong>有限等待：</strong></p>
+<p>任何等待进入临界区的进程等待时间只需等待n - 1次，因为扫描（9行）是有限次数的。</p>
+<h2 id="互斥锁（mutex-lock）"><a href="#互斥锁（mutex-lock）" class="headerlink" title="互斥锁（mutex lock）"></a>互斥锁（mutex lock）</h2><p>互斥锁是操作系统设计人员设计的一种软件工具。互斥锁存在两个函数：<code>acquire()</code>获取锁，<code>release()</code>释放锁。每个锁有一个布尔变量<code>available</code>来表示锁是否可用</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">acquire()&#123;</span><br><span class="line">    <span class="keyword">while</span>(!available)</span><br><span class="line">        ;<span class="comment">//busy waiting</span></span><br><span class="line">    available = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">release()&#123;</span><br><span class="line">    available = <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这些操作也必须原子的执行。采用互斥锁解决临界问题的方法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    <span class="comment">//获得锁</span></span><br><span class="line">    <span class="comment">//临界区</span></span><br><span class="line">    <span class="comment">//释放区</span></span><br><span class="line">    <span class="comment">//剩余区</span></span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<p><code>acquire()</code>函数忙等待直到锁可以用<code>available == true</code>，然后将锁上锁，直到结束临界区的操作之后，再释放锁。</p>
+<blockquote>
+<p> 以上三种算法称为 “自旋锁（spin lock）”，自旋锁适合短时间等待的进程，长时间将产生很大的时间开销。</p>
+</blockquote>
+<h2 id="信号量"><a href="#信号量" class="headerlink" title="信号量"></a>信号量</h2><p>信号量是一种类似互斥锁的具有更高鲁棒性的方法。</p>
+<p>信号量(semaphore)S是一个整型变量，除了初始化之外只通过两个原子操作来更改：<code>wait()</code>和<code>signal()</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">wait()&#123;</span><br><span class="line">    <span class="keyword">while</span>(S&lt;=<span class="number">0</span>)</span><br><span class="line">        ;<span class="comment">//busy wait</span></span><br><span class="line">    S--;</span><br><span class="line">&#125;</span><br><span class="line">signal()&#123;</span><br><span class="line">    S++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于信号量的操作应该均为原子操作。在使用资源之前，调用wait，使用之后调用signal。</p>
+<p>假设P1执行S1，P2执行S2，且S1必须先S2执行，那么只需要二者共享一个信号量synch(初始化为0)即可:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">P1:</span><br><span class="line">S1;</span><br><span class="line">signal(synch);</span><br><span class="line"></span><br><span class="line">P2:</span><br><span class="line">wait(synch);</span><br><span class="line">S2;</span><br></pre></td></tr></table></figure>
+
+<p>S2等待S1执行完毕将信号量加一之后才可以执行。</p>
+<p>但是我们发现：这个信号量其实就是把available变成了一个整型数而已，同样需要忙等待。</p>
+<p>如何解决忙等的问题呢？</p>
+<p>我们这样定义一个信号量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> value;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">process</span> *<span class="title">list</span>;</span></span><br><span class="line">&#125;semaphore;</span><br></pre></td></tr></table></figure>
+
+<p>这样定义wait和signal</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">wait(semaphore *S)&#123;</span><br><span class="line">    S-&gt;value--;</span><br><span class="line">    <span class="keyword">if</span>(S-&gt;value &lt; <span class="number">0</span>)&#123;</span><br><span class="line">        add <span class="keyword">this</span> process to S-&gt;<span class="built_in">list</span>;</span><br><span class="line">        block();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">signal(semaphore *S)&#123;</span><br><span class="line">    S-&gt;value++;</span><br><span class="line">    <span class="keyword">if</span>(S-&gt;value &lt;= <span class="number">0</span>)&#123;</span><br><span class="line">        remove a process P from S-&gt;<span class="built_in">list</span>;</span><br><span class="line">        wakeup(P);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><font color="red">这里的思想是把原先需要忙等待的进程阻塞，但是其实并没有真正解决忙等的问题，只是把忙等放入了临界区，减少了忙等的时间（这里还不太理解）</font></p>
+<p>block是挂起调用的进程，wakeup(p)重新启动被阻塞的进程P。这种方法也要保证必须原子的操作，尤其要注意要禁止中断。</p>
+<h3 id="死锁（dead-lock）和-饥饿（starvation）"><a href="#死锁（dead-lock）和-饥饿（starvation）" class="headerlink" title="死锁（dead lock）和 饥饿（starvation）"></a>死锁（dead lock）和 饥饿（starvation）</h3><p>死锁：具有信号量的进程，所有等待进程都在等待一个事件发生，而这个事件只能由等待进程产生，因此产生了死锁问题。</p>
+<p>假设存在P0和P1两个进程，Q和S两个初始值为1的信号量，P0进行wait(S)操作，P1进行wait(Q)操作，而当P1执行wait(S)，我们必须要等待P0执行signa(S)；同样P1执行wait(Q)时，也同样需要等待P0执行signal(Q)，这就产生了死锁现象。</p>
+<p>饥饿： 就是说想要进入临界区的进程很久之后才能进入，例如链表使用LIFO顺序来增加删除进程。</p>
+<h3 id="优先级反转"><a href="#优先级反转" class="headerlink" title="优先级反转"></a>优先级反转</h3><p>当高优先级任务正等待信号量（此信号量被一个低优先级任务拥有着）的时候，一个介于两个任务优先之间的中等优先级任务开始执行——这就会导致一个高优先级任务在等待一个低优先级任务，而低优先级任务却无法执行类似死锁的情形发生。</p>
+<p>优先级继承就是为了解决优先级反转问题而提出的一种优化机制。其大致原理是让低优先级线程在获得同步资源的时候(如果有高优先级的线程也需要使用该同步资源时)，<strong>临时</strong>提升其优先级。以前其能更快的执行并释放同步资源。释放同步资源后再恢复其原来的优先级。</p>
+<h2 id="经典问题"><a href="#经典问题" class="headerlink" title="经典问题"></a>经典问题</h2><h3 id="有界缓冲问题："><a href="#有界缓冲问题：" class="headerlink" title="有界缓冲问题："></a>有界缓冲问题：</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//生产者消费者共享以下内容：</span></span><br><span class="line"><span class="keyword">int</span> n;</span><br><span class="line">semaphore mutex = <span class="number">1</span>;</span><br><span class="line">semaphore full = <span class="number">0</span>;</span><br><span class="line">semaphore empty = n;</span><br><span class="line"></span><br><span class="line"><span class="comment">//生产者</span></span><br><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    <span class="comment">/*produce an item in next_produced*/</span></span><br><span class="line">    </span><br><span class="line">    wait(empty);</span><br><span class="line">    wait(mutex);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*add next_produced to the buffer*/</span></span><br><span class="line">    </span><br><span class="line">    signal(mutex);</span><br><span class="line">    signal(full);</span><br><span class="line"> </span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//消费者</span></span><br><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    wait(full);</span><br><span class="line">    wait(mutex);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*remove an item from buffer to next_consumed*/</span></span><br><span class="line">    </span><br><span class="line">    signal(mutex);</span><br><span class="line">    signal(empty);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*consume the item in next_consumed*/</span></span><br><span class="line">    </span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<p>这个很容易理解，不再赘述</p>
+<h3 id="读者作者问题："><a href="#读者作者问题：" class="headerlink" title="读者作者问题："></a>读者作者问题：</h3></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Charlie</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://charlieblog.top/2021/10/31/%E4%B8%B4%E7%95%8C%E5%8C%BA%E9%97%AE%E9%A2%98/">https://charlieblog.top/2021/10/31/%E4%B8%B4%E7%95%8C%E5%8C%BA%E9%97%AE%E9%A2%98/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://charlieblog.top" target="_blank">CodeSpace</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></div><div class="post_share"><div class="social-share" data-image="/2021/10/31/%E4%B8%B4%E7%95%8C%E5%8C%BA%E9%97%AE%E9%A2%98/Best-OS-For-Gaming.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button button--animated"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.png" target="_blank"><img class="post-qr-code-img" src="/img/wechat.png" alt="wechat"/></a><div class="post-qr-code-desc">wechat</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="alipay"/></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/2021/10/31/%E7%B3%96%E7%B3%96%E5%88%AB%E8%83%A1%E8%AF%B4%EF%BC%8C%E6%88%91%E7%9C%9F%E7%9A%84%E4%B8%8D%E6%98%AF%E7%AD%BE%E5%88%B0%E9%A2%98%E7%9B%AE/"><img class="prev-cover" src="/2021/10/31/%E7%B3%96%E7%B3%96%E5%88%AB%E8%83%A1%E8%AF%B4%EF%BC%8C%E6%88%91%E7%9C%9F%E7%9A%84%E4%B8%8D%E6%98%AF%E7%AD%BE%E5%88%B0%E9%A2%98%E7%9B%AE/icpc-logo.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">糖糖别胡说，我真的不是签到题目</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Peterson%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">1.</span> <span class="toc-text">Peterson解决方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%90%8C%E6%AD%A5%EF%BC%88%E5%9F%BA%E4%BA%8Elocking%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">硬件同步（基于locking）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#test-and-set"><span class="toc-number">2.1.</span> <span class="toc-text">test_and_set()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#compare-and-swap"><span class="toc-number">2.2.</span> <span class="toc-text">compare_and_swap()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%B9%E8%BF%9B%E7%9A%84test-and-swap%E7%AE%97%E6%B3%95"><span class="toc-number">2.3.</span> <span class="toc-text">改进的test_and_swap算法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%92%E6%96%A5%E9%94%81%EF%BC%88mutex-lock%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">互斥锁（mutex lock）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8F"><span class="toc-number">4.</span> <span class="toc-text">信号量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%BB%E9%94%81%EF%BC%88dead-lock%EF%BC%89%E5%92%8C-%E9%A5%A5%E9%A5%BF%EF%BC%88starvation%EF%BC%89"><span class="toc-number">4.1.</span> <span class="toc-text">死锁（dead lock）和 饥饿（starvation）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%85%88%E7%BA%A7%E5%8F%8D%E8%BD%AC"><span class="toc-number">4.2.</span> <span class="toc-text">优先级反转</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%8F%E5%85%B8%E9%97%AE%E9%A2%98"><span class="toc-number">5.</span> <span class="toc-text">经典问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%89%E7%95%8C%E7%BC%93%E5%86%B2%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="toc-number">5.1.</span> <span class="toc-text">有界缓冲问题：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E8%80%85%E4%BD%9C%E8%80%85%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="toc-number">5.2.</span> <span class="toc-text">读者作者问题：</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Charlie</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>if (document.getElementsByClassName('mermaid').length) {
+  if (window.mermaidJsLoad) mermaid.init()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(() => {
+      window.mermaidJsLoad = true
+      mermaid.initialize({
+        theme: 'default',
+      })
+      false && mermaid.init()
+    })
+  }
+}</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
