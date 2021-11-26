@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://charlieblog.top/2021/11/26/MySQL-1/</loc>
+    
+    <lastmod>2021-11-26</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://charlieblog.top/2021/11/16/%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%AE%A1%E7%AE%97/</loc>
     
     <lastmod>2021-11-16</lastmod>
@@ -298,6 +305,13 @@
   </url>
   
   <url>
+    <loc>https://charlieblog.top/tags/MySQL/</loc>
+    <lastmod>2021-11-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://charlieblog.top/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/</loc>
     <lastmod>2021-11-26</lastmod>
     <changefreq>daily</changefreq>
@@ -329,6 +343,13 @@
   
   <url>
     <loc>https://charlieblog.top/categories/Java/</loc>
+    <lastmod>2021-11-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://charlieblog.top/categories/MySQL/</loc>
     <lastmod>2021-11-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
