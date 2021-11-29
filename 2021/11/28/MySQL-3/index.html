@@ -1,0 +1,663 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>MySQL(3) | CodeSpace</title><meta name="keywords" content="MySQL"><meta name="author" content="Charlie"><meta name="copyright" content="Charlie"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="16、创建高级联结 使用表别名使用表的别名，有两个主要理由  缩短SQL语句 允许在单条select语句中多次使用相同的表   别名不会返回到客户机，仅仅在查询或者执行中使用  使用不用类型的联结自联结假如你发现某物品存在问题，我们想要知道生产该物品的供应商生产的其他物品是否也存在问题的时候，可能目前只能使用子查询：  如果使用自联结查询：  其实就是将一个表逻辑上复制成两个，并分别取名p1，p2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL(3)">
+<meta property="og:url" content="https://charlieblog.top/2021/11/28/MySQL-3/index.html">
+<meta property="og:site_name" content="CodeSpace">
+<meta property="og:description" content="16、创建高级联结 使用表别名使用表的别名，有两个主要理由  缩短SQL语句 允许在单条select语句中多次使用相同的表   别名不会返回到客户机，仅仅在查询或者执行中使用  使用不用类型的联结自联结假如你发现某物品存在问题，我们想要知道生产该物品的供应商生产的其他物品是否也存在问题的时候，可能目前只能使用子查询：  如果使用自联结查询：  其实就是将一个表逻辑上复制成两个，并分别取名p1，p2">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://charlieblog.top/2021/11/28/MySQL-3/Como-ver-las-consultas-que-se-estan-ejecutando-en-MySQL-professor-falken.com_.jpg">
+<meta property="article:published_time" content="2021-11-28T00:32:30.000Z">
+<meta property="article:modified_time" content="2021-11-29T15:43:31.929Z">
+<meta property="article:author" content="Charlie">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://charlieblog.top/2021/11/28/MySQL-3/Como-ver-las-consultas-que-se-estan-ejecutando-en-MySQL-professor-falken.com_.jpg"><link rel="shortcut icon" href="/img/chevron-double-up.svg"><link rel="canonical" href="https://charlieblog.top/2021/11/28/MySQL-3/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MySQL(3)',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-11-29 23:43:31'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data is-center"><div class="data-item"><a href="/archives/"><div class="headline">文章</div><div class="length-num">40</div></a></div><div class="data-item"><a href="/tags/"><div class="headline">标签</div><div class="length-num">6</div></a></div><div class="data-item"><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 历史</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/2021/11/28/MySQL-3/Como-ver-las-consultas-que-se-estan-ejecutando-en-MySQL-professor-falken.com_.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">CodeSpace</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 历史</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">MySQL(3)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon fas fa-history"></i><span class="post-meta-label">更新于</span><time datetime="2021-11-29T15:43:31.929Z" title="更新于 2021-11-29 23:43:31">2021-11-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/MySQL/">MySQL</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>15分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="MySQL(3)"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>16、创建高级联结</p>
+<h2 id="使用表别名"><a href="#使用表别名" class="headerlink" title="使用表别名"></a>使用表别名</h2><p>使用表的别名，有两个主要理由</p>
+<ul>
+<li>缩短SQL语句</li>
+<li>允许在单条select语句中多次使用相同的表</li>
+</ul>
+<blockquote>
+<p>别名不会返回到客户机，仅仅在查询或者执行中使用</p>
+</blockquote>
+<h2 id="使用不用类型的联结"><a href="#使用不用类型的联结" class="headerlink" title="使用不用类型的联结"></a>使用不用类型的联结</h2><h3 id="自联结"><a href="#自联结" class="headerlink" title="自联结"></a>自联结</h3><p>假如你发现某物品存在问题，我们想要知道生产该物品的供应商生产的其他物品是否也存在问题的时候，可能目前只能使用子查询：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211128214224501.png" alt="image-20211128214224501"></p>
+<p>如果使用自联结查询：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211128214339758.png" alt="image-20211128214339758"></p>
+<p>其实就是将一个表逻辑上复制成两个，并分别取名p1，p2。</p>
+<h3 id="自然联结"><a href="#自然联结" class="headerlink" title="自然联结"></a>自然联结</h3><p>我们对表进行联结，那么一定至少有一个列出现在不止一个表中，标准联结返回所有数据，Iran链接排除多次出现，使得每个列只返回一次。（事实上我们到目前为止用到的每个内部联结都是自然联结）</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129132217837.png" alt="image-20211129132217837"></p>
+<h3 id="外部联结"><a href="#外部联结" class="headerlink" title="外部联结"></a>外部联结</h3><p>许多联结将一个表中的行于另一个表中的行相关联，但有时候需要包含哪些没有关联行的行。例如：</p>
+<ul>
+<li>统计每个客户的订单数，包括未下单的客户</li>
+<li>列出所有产品及订购数量，包括无人订购的产品</li>
+</ul>
+<p>一个简单的select内联结语句如下：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129085713669.png" alt="image-20211129085713669"></p>
+<p>下面这一条外部联结语句使用了 <code>outer join</code> 关键字来指定外部联结，它会包含没有关联的行（10002实际上并没有被订购）。在使用outer join语法时，必须要使用right或者left关键字指定包括其所有行的表，right指示这个表是outer join右边的表，left指示这个表是outer join左边的表，当我们选择 left outer join时，我们指的是这次查询希望能以customers为准，列出我们需要的所有cust_id，下面是right和left的区别：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129085823339.png" alt="image-20211129085823339"></p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129090507617.png" alt="image-20211129090507617"></p>
+<h2 id="使用带聚集函数的联结"><a href="#使用带聚集函数的联结" class="headerlink" title="使用带聚集函数的联结"></a>使用带聚集函数的联结</h2><p>下面这个查询使用inner join将customers和orders表相互关联，并根据客户分组。</p>
+<p>关于group，有一个很容易理解的例子，<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq403580298/article/details/90756352?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522163814846616780366530721%2522%252C%2522scm%2522%253A%252220140713.130102334.pc%255Fall.%2522%257D&request_id=163814846616780366530721&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~first_rank_ecpm_v1~rank_v31_ecpm-1-90756352.first_rank_v2_pc_rank_v29&utm_term=MySQL%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%A6%81%E5%86%99+group+by&spm=1018.2226.3001.4187">MySQL对group by原理和理解</a></p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129090753180.png" alt="image-20211129090753180"></p>
+<p>下面是外部联结</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129092358997.png" alt="image-20211129092358997"></p>
+<h2 id="使用联结和联结条件"><a href="#使用联结和联结条件" class="headerlink" title="使用联结和联结条件"></a>使用联结和联结条件</h2><ul>
+<li>一般使用内部联结，但是不要忘记外部联结</li>
+<li>保证正确的联结条件</li>
+<li>如果不想要笛卡尔积，那么请给出联结条件</li>
+<li>在我们联结多个表之前，请分别测试每个联结，这样会使得排除故障更加简单。</li>
+</ul>
+<hr>
+<h1 id="组合查询"><a href="#组合查询" class="headerlink" title="组合查询"></a>组合查询</h1><p>我们之前学的都是单个select，而MySQL中也存在组合查询，以下是使用组合查询的基本情况：</p>
+<ul>
+<li>在单个查询中从不同的表返回类似结构的数据</li>
+<li>对单个表执行多个查询，按照单个查询返回数据</li>
+</ul>
+<blockquote>
+<p>多个where和组合查询的效果基本一样</p>
+</blockquote>
+<h2 id="创建组合查询"><a href="#创建组合查询" class="headerlink" title="创建组合查询"></a>创建组合查询</h2><h3 id="使用union操作符"><a href="#使用union操作符" class="headerlink" title="使用union操作符"></a>使用union操作符</h3><p>union的使用：在每条select语句之间加上union即可：</p>
+<p>假如我们要找到价格小于等于五的所有物品和包括供应商1001和1002生产的所有物品（不考虑价格）：</p>
+<p>首先是单个select语句：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129093631014.png" alt="image-20211129093631014"></p>
+<p>然后是 union语句：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129093802374.png" alt="image-20211129093802374"></p>
+<p>最后是where（这个union多少感觉有点鸡肋）：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129093941366.png" alt="image-20211129093941366"></p>
+<h3 id="union规则"><a href="#union规则" class="headerlink" title="union规则"></a>union规则</h3><ul>
+<li>union必须由两条或以上select语句组成</li>
+<li>union中的每个查询必须包含相同的列、表达式或者聚集函数（顺序可变）</li>
+<li>列数据类型必须是可以进行隐式转换的类型或者完全一致。</li>
+</ul>
+<h3 id="包含或者取消重复的行"><a href="#包含或者取消重复的行" class="headerlink" title="包含或者取消重复的行"></a>包含或者取消重复的行</h3><p>我们注意到上面的union自动帮我们去除了重复行（prod_id = ‘FU1’）,如果不想要这个默认行为，只需要将union改为union all即可</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129094327828.png" alt="image-20211129094327828"></p>
+<h3 id="对组合查询结果排序"><a href="#对组合查询结果排序" class="headerlink" title="对组合查询结果排序"></a>对组合查询结果排序</h3><p>对于组合查询，order by仅能出现在最后一分select之后，且只能统一排序，不能每一部分分别排序：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129094826179.png" alt="image-20211129094826179"></p>
+<blockquote>
+<p>要注意的是，这个order by 并不是最后一个select的子句，而是排序整个查询结果。</p>
+</blockquote>
+<hr>
+<h1 id="全文本搜索"><a href="#全文本搜索" class="headerlink" title="全文本搜索"></a>全文本搜索</h1><h2 id="理解全文本搜索"><a href="#理解全文本搜索" class="headerlink" title="理解全文本搜索"></a>理解全文本搜索</h2><p>前面介绍过like搜索，可以利用通配符和正则表达式进行搜索，但是存在几个限制：</p>
+<ul>
+<li>性能可能很低</li>
+<li>很难使用通配符和正则表达式来进行精确的控制</li>
+<li>会得到想要的结果，但是无法提供智能化的结果。lieu人搜索一个特殊词会返回包含该词的所有行，但是不会区分包含了几次。</li>
+</ul>
+<p>为了解决这些限制，我们可以使用全文本搜索。MySQL创建指定列中各词的一个索引，搜索可以针对这些词进行。</p>
+<h2 id="使用全文本搜索"><a href="#使用全文本搜索" class="headerlink" title="使用全文本搜索"></a>使用全文本搜索</h2><p>为了进行全文本搜索，必须索引被搜索的列，而且要随着数据的改变不断地重新索引。在进行适当设计之后，MySQL会自动进行索引和重新索引。</p>
+<h3 id="启用全文本搜索支持"><a href="#启用全文本搜索支持" class="headerlink" title="启用全文本搜索支持"></a>启用全文本搜索支持</h3><p>一般在创建表时启用全文本搜索。create table语句接受fulltext子句，给出被索引列的一个逗号分隔的列表：</p>
+<p>这里的create table不用考虑，后面会有。为了进行全文本搜索 ，我们根据子句FULLTEXT（note_text）的指示对它进行索引。这里可以指定一个或多个列。</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129163323446.png" alt="image-20211129163323446"></p>
+<p>之后MySQL会自动维护这个索引，增加、删除或者更新行的时索引也会自动更新。</p>
+<blockquote>
+<p>在导入数据时不要指定fulltext，因为这会很花时间。应该首先导入所有数据，然后再修改表</p>
+</blockquote>
+<h3 id="进行全文本搜索"><a href="#进行全文本搜索" class="headerlink" title="进行全文本搜索"></a>进行全文本搜索</h3><p>使用<code>Match()</code>  <code>Against()</code>进行全文本搜索。其中match指定被搜索的列，against指定要使用的表达式。</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129163914180.png" alt="image-20211129163914180"></p>
+<p>match(note_text)指示MySQL针对指定的列进行搜索，against(‘rabbit’)指定词rabbit作为搜索文本。</p>
+<blockquote>
+<p>传递给match的值必须与fulltext定义中的相同，如果指定多个列，则必须列出它们（次序也要正确）</p>
+</blockquote>
+<p>也可以利用like完成（但是可以发现与上面的次序不同）：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129164242056.png" alt="image-20211129164242056"></p>
+<p>全文本搜索给我们返回的次序是：高优先级 -&gt; 低优先级，在全文本搜索的第一个结果中rabbit是第三个单词，这比第二个结果中位于20位的优先级来得更高，而like不会去管这些东西。</p>
+<p>我们来看排序的工作情况(不知道为啥排版好乱)：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129164628361.png" alt="image-20211129164628361"></p>
+<p>这里是在select中使用match  against，因此返回全部的行和优先级。这两个函数会计算一个优先级，根据词的数目，唯一词的数目和整个索引中词的总数以及包含盖茨的行的数目计算出来。文本中词靠前的行的等级值比靠后的高。</p>
+<blockquote>
+<p>如果指定多个搜索项，那么包含多数匹配词的哪些行将具有比包含较少词的那些行高的等级值。</p>
+</blockquote>
+<h3 id="使用查询扩展"><a href="#使用查询扩展" class="headerlink" title="使用查询扩展"></a>使用查询扩展</h3><p>查询扩展其实就是：我们想查的更多一些，即使未找到我们指定的词，也可能会返回。大概流程是这样的：</p>
+<ul>
+<li>首先进行基本的全文本搜索，返回与搜索条件匹配的所有行</li>
+<li>其次MySQL检查这些匹配行并选择有用的词（这个检查方法后面细说）</li>
+<li>最后再次进行全文本搜索，使用所有有用的词</li>
+</ul>
+<p>首先是不包含扩展的查询：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129165622529.png" alt="image-20211129165622529"></p>
+<p>接下来是扩展查询：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129165816580.png" alt="image-20211129165816580"></p>
+<p>返回结果中，第一行是包含anvils的，优先级最高，第二行与优先级无关，但是它包含第一行中的两个词，所以也被检索出来，第三行也包含这两个词，但是他们在文本中的位置更靠后且分开的更远，因此等级为第三。</p>
+<p>这种查询极大的增加了返回的行数，但是无用的行数也多了很多。</p>
+<h3 id="布尔文本搜索"><a href="#布尔文本搜索" class="headerlink" title="布尔文本搜索"></a>布尔文本搜索</h3><p>以布尔方式（in boolean mode）可以提供关于如下内容的细节：</p>
+<ul>
+<li>要匹配的词</li>
+<li>要排斥的词（如果包含这个词，无论如何也不返回）</li>
+<li>排列提示</li>
+<li>表达式分组</li>
+<li>另外一些内容</li>
+</ul>
+<blockquote>
+<p>布尔搜索即时没有定义fulltext也可以使用，但是效率极低</p>
+</blockquote>
+<p><img src="/2021/11/28/MySQL-3/image-20211129171323287.png" alt="image-20211129171323287"></p>
+<p>这里我们虽然指定了 in boolean mode，但是因为没加上布尔操作符，结果与没有指定的相同</p>
+<blockquote>
+<p>这里的行为有一些差别，这将在后面介绍。</p>
+</blockquote>
+<p>为了匹配包含heavy但不包含任意以rope开始的词行，可以使用以下查询：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129172100316.png" alt="image-20211129172100316"></p>
+<p>这里只返回一行，因为-rope*明确的指出我们不要任何以rope开头的词。</p>
+<p>其实很类似通配符，下面是这些操作符的说明：</p>
+<table>
+<thead>
+<tr>
+<th align="center">布尔操作符</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">+</td>
+<td align="center">包含，词必须存在</td>
+</tr>
+<tr>
+<td align="center">-</td>
+<td align="center">排除，词必须不存在</td>
+</tr>
+<tr>
+<td align="center">&gt;</td>
+<td align="center">包含，且增加等级值</td>
+</tr>
+<tr>
+<td align="center">&lt;</td>
+<td align="center">包含，且减少等级值</td>
+</tr>
+<tr>
+<td align="center">()</td>
+<td align="center">把词组成子表达式（允许作为一个整体被包含、排列或者排除等）</td>
+</tr>
+<tr>
+<td align="center">~</td>
+<td align="center">取消一个词的排序值</td>
+</tr>
+<tr>
+<td align="center">*</td>
+<td align="center">词尾的通配符</td>
+</tr>
+<tr>
+<td align="center">“ ”</td>
+<td align="center">定义一个短语（与单个词的列表不一样，它匹配整个短语以便包含或者排除这个短语）</td>
+</tr>
+</tbody></table>
+<p>下面是一些示例：</p>
+<ul>
+<li>搜索包含rabbit和bait的行（全部出现）</li>
+</ul>
+<p><img src="/2021/11/28/MySQL-3/image-20211129172841407.png" alt="image-20211129172841407"></p>
+<ul>
+<li>不指定操作符，搜索包含rabbit和bait中的至少一个词的行</li>
+</ul>
+<p><img src="/2021/11/28/MySQL-3/image-20211129173127556.png" alt="image-20211129173127556"></p>
+<ul>
+<li>匹配rabbit bait而非其中某个词</li>
+</ul>
+<p><img src="/2021/11/28/MySQL-3/image-20211129173436306.png" alt="image-20211129173436306"></p>
+<ul>
+<li>匹配rabbit和carrot，增加前者的优先级，降低后者的优先级</li>
+</ul>
+<p><img src="/2021/11/28/MySQL-3/image-20211129173641465.png" alt="image-20211129173641465"></p>
+<ul>
+<li>匹配safe和combination，降低后者的等级</li>
+</ul>
+<p><img src="/2021/11/28/MySQL-3/image-20211129173720161.png" alt="image-20211129173720161"></p>
+<blockquote>
+<p>在布尔方式之中，不按照等级值降序排序返回的行</p>
+</blockquote>
+<h3 id="使用说明"><a href="#使用说明" class="headerlink" title="使用说明"></a>使用说明</h3><ul>
+<li><p>索引全文本数据时，短词被忽略且从索引中排除。（短词定义为三个或者三个以下字符的词）</p>
+</li>
+<li><p>MySQL带有一个内建的非用词列表，他们在全文本搜索时会被忽略。如果需要可以将之覆盖</p>
+</li>
+<li><p>许多次出现的频率很高，搜索他们毫无用处。因此MySQL有一个 50%规则：如果一个词出现在50%以上的行中，那么他将被忽略。这个规则不用于布尔模式。</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129174120084.png" alt="image-20211129174120084"></p>
+</li>
+<li><p>如果表中的行数少于3行，那么全文本搜索不返回结果（每个词或者不出现或者出现在50%的行中）</p>
+</li>
+<li><p><strong>忽略词中的单引号（don’t = dont）</strong></p>
+</li>
+<li><p>不具有词分隔符的语言（汉语）不能恰当的返回全文本搜索结果</p>
+</li>
+<li><p>仅在MyISAM数据库引擎中支持全文本搜索</p>
+</li>
+</ul>
+<hr>
+<h1 id="19、插入数据"><a href="#19、插入数据" class="headerlink" title="19、插入数据"></a>19、插入数据</h1><p>insert语句可以用来做这些事情</p>
+<ul>
+<li>插入完整的行</li>
+<li>插入行的一部分</li>
+<li>插入多行</li>
+<li>插入某些查询的结果</li>
+</ul>
+<h2 id="插入完整的行"><a href="#插入完整的行" class="headerlink" title="插入完整的行"></a>插入完整的行</h2><p><img src="/2021/11/28/MySQL-3/image-20211129174642520.png" alt="image-20211129174642520"></p>
+<p>这些语句不难理解，但是有一个问题，就是依赖于插入顺序。想到python中传参的一种方式，其实MySQL也有类似的机制，但是无疑很麻烦。</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129175022615.png" alt="image-20211129175022615"></p>
+<p>这种办法的优点就是我们可以自定义传入顺序，不必去记住保存在数据库之中的顺序（第x个value值对应第x个指定的列名）</p>
+<blockquote>
+<p>最好使用第二种方法避免插入出错</p>
+<p>如果表的定义允许，这种方法也可以省略列。哪些没有被明确指明参数的，将会被设置为null或者默认值。但是如果这些列不支持这两个，那么这将会产生错误。</p>
+</blockquote>
+<blockquote>
+<p>insert操作很费时间，而且可能会降低select语句的性能。如果数据检索更加钟要，可以在isnert和into之间添加LOW_PRIORITY关键字，指示MySQL降低insert的优先级</p>
+</blockquote>
+<h2 id="插入多个行"><a href="#插入多个行" class="headerlink" title="插入多个行"></a>插入多个行</h2><p>方法一是多个insert语句。方法二是：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129175715092.png" alt="image-20211129175715092"></p>
+<p>这种操作通常比方法一更快（处理单个insert语句）</p>
+<h2 id="插入检索出的数据"><a href="#插入检索出的数据" class="headerlink" title="插入检索出的数据"></a>插入检索出的数据</h2><p>就是所谓的insert select。由于书中要新建一个表格,（我还不太会，就先把命令输进去看看吧）。这个意思就是，从custnew之中选择所有的列插入到customers之中，而不是列出他们。</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129203246850.png" alt="image-20211129203246850"></p>
+<blockquote>
+<p>为简单起见，这个例子在insert和select语句之中使用了相同的列名。但是其实未必要完全匹配。因为MySQL不关心select返回的列名，只是将第一列放入到指定的第一列。</p>
+</blockquote>
+<hr>
+<h1 id="更新和删除数据"><a href="#更新和删除数据" class="headerlink" title="更新和删除数据"></a>更新和删除数据</h1><h2 id="更新数据"><a href="#更新数据" class="headerlink" title="更新数据"></a>更新数据</h2><p>update语句可以用来更新语句</p>
+<ul>
+<li>更新特定行</li>
+<li>更新所有行</li>
+</ul>
+<blockquote>
+<p>使用update一定不要忘记where语句，否则将更新整个表</p>
+</blockquote>
+<p>update由三个部分组成：</p>
+<ul>
+<li>要更新的表</li>
+<li>列名和新值</li>
+<li>确定要更新的过滤条件</li>
+</ul>
+<p>如：我们要将客户10005的邮箱填入：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129204230920.png" alt="image-20211129204230920"></p>
+<p>更新多个时，只需要使用一个set并加入分号即可</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129204336291.png" alt="image-20211129204336291"></p>
+<blockquote>
+<p>update可以使用子查询技术</p>
+<p>如果我们更新了多行，但是在某一行或者多行出现错误时，则整个update将会被取消。如果我们希望即使发生错误也要继续的话，就使用ignore关键字<code>update ignore customers...</code></p>
+</blockquote>
+<p>如果希望删除某个列的值，可以将之设置为null（假定表允许设置null）</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129204710844.png" alt="image-20211129204710844"></p>
+<h2 id="删除数据"><a href="#删除数据" class="headerlink" title="删除数据"></a>删除数据</h2><ul>
+<li>删除特定行</li>
+<li>删除所有行</li>
+</ul>
+<blockquote>
+<p>同样不要忽略where子句</p>
+</blockquote>
+<p>下面是一个例子：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129204819870.png" alt="image-20211129204819870"></p>
+<p>要注意的是，delete删除的是一整行而不是一列，因此它不需要列名或者通配符。</p>
+<blockquote>
+<p>delete只删除数据，不删除表本身</p>
+<p>如果想删除所有行，请不要使用<code>delete</code>，而应该使用<code>truncate table</code>语句，它删除原来的表并重建一个表，速度更快。</p>
+</blockquote>
+<h2 id="更新和删除的原则"><a href="#更新和删除的原则" class="headerlink" title="更新和删除的原则"></a>更新和删除的原则</h2><ul>
+<li>除非确实想要删除或者更新整个表，否则不要忘记where</li>
+<li>保证每个表都有主键，尽可能像使用where子句一样使用</li>
+<li>在删除或者更新前，请先查看自己想进行的操作是否正确</li>
+<li>使用强制实施引用完整性的数据库，这样MySQL将不允许删除具有与其他表相关联的数据行。</li>
+</ul>
+<hr>
+<h1 id="21、创建和操纵表"><a href="#21、创建和操纵表" class="headerlink" title="21、创建和操纵表"></a>21、创建和操纵表</h1><h2 id="创建表"><a href="#创建表" class="headerlink" title="创建表"></a>创建表</h2><ul>
+<li>使用交互式创建和管理表的工具</li>
+<li>直接使用MySQL语句操纵</li>
+</ul>
+<h3 id="表创建基础"><a href="#表创建基础" class="headerlink" title="表创建基础"></a>表创建基础</h3><p>为了利用create table创建表，<strong>必须给出以下信息</strong>：</p>
+<ul>
+<li>新表的名字，在关键字create table之后给出</li>
+<li>表列的名字和定义，用逗号分隔</li>
+</ul>
+<p>例如：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129220227928.png" alt="image-20211129220227928"></p>
+<blockquote>
+<p>如果想要覆盖已有的表，需要先删除之前的表。如果仅仅想在一个表不存在时创建，应该在表名之后给出if not exists。</p>
+</blockquote>
+<h3 id="使用null值"><a href="#使用null值" class="headerlink" title="使用null值"></a>使用null值</h3><p>null值就是没有值或者缺值，允许null值的列也允许在插入时不给出该列的值。不允许null的值的列就不接受该列没有值的行。这个在我们创建表的时候就会决定，如上图。</p>
+<h3 id="主键再介绍"><a href="#主键再介绍" class="headerlink" title="主键再介绍"></a>主键再介绍</h3><p>主键可以是单个列，也可以是多个列，但是这多个列的组合值必须唯一，在定义时只需要给出以后号分隔的列表即可：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129221149691.png" alt="image-20211129221149691"></p>
+<h3 id="使用auto-increment"><a href="#使用auto-increment" class="headerlink" title="使用auto_increment"></a>使用auto_increment</h3><p>auto_increment其实就是告诉MySQL，本列没增加一行时自动增量。每次insert，MySQL自动增加，从而可以用于主键。</p>
+<p>每个表只允许有一个auto_incerment列，而且必须被索引。</p>
+<blockquote>
+<p>我们可以覆盖掉auto_increment值，只要手工插入一个即可，以后的操作将开始使用这个值。</p>
+<p>可以通过使用 <code>select last_insert_id()</code>来确认最后auto_increment值</p>
+</blockquote>
+<h3 id="指定默认值"><a href="#指定默认值" class="headerlink" title="指定默认值"></a>指定默认值</h3><p><img src="/2021/11/28/MySQL-3/image-20211129222514312.png" alt="image-20211129222514312"></p>
+<p>在未给出数量时，将之设置为1，我们应该使用默认值而非null。</p>
+<blockquote>
+<p>默认值不允许使用函数</p>
+</blockquote>
+<h3 id="引擎类型"><a href="#引擎类型" class="headerlink" title="引擎类型"></a>引擎类型</h3><p>select是在我们已经选择好的引擎之内工作，但是create table需要我们选择这个表以后将工作在什么引擎之下，因为不同的引擎有不同的功能和特性，良好的引擎选择将会获得更好的性能和灵活性。引擎也存在默认值，如果不指定引擎将会选择默认的引擎（很可能是MyISAM）</p>
+<ul>
+<li>InnoDB是一个可靠的事务处理引擎，但是不支持全文本搜索</li>
+<li>MEMORY在功能商等同于MyISAM，但是由于数据存储在内存中，速度很快，适合做临时表</li>
+<li>MyISAM是一个性能极高的引擎，支持全文本搜索但是不支持事务处理</li>
+</ul>
+<h2 id="更新表"><a href="#更新表" class="headerlink" title="更新表"></a>更新表</h2><p>更改表可以使用alter table。但是尽可能不要更改表，在设计时请考虑好。</p>
+<p>为了使用这个语句，必须给出下列信息：</p>
+<ul>
+<li>要更改的表名</li>
+<li>所做更改的列表</li>
+</ul>
+<p>下面是一个例子：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129223302273.png" alt="image-20211129223302273"></p>
+<p>下面是删除刚刚添加的列的例子：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129223406658.png" alt="image-20211129223406658"></p>
+<p>alter table 的一种常见用途是定义外键。下面是一些例子</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129223825723.png" alt="image-20211129223825723"></p>
+<blockquote>
+<p> 这些外键已经在书中给出的sql文件之中定义，因此我直接将书中的代码截图过来了</p>
+</blockquote>
+<p>有关外键，请看 <a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/1177760294764384/1218728424164736">这篇文章</a>。</p>
+<p>复杂的表结构更改一般需要手动删除过程：</p>
+<ul>
+<li>用新的列布局创建一个新表</li>
+<li>使用insert select语句从旧表复制数据到新表。</li>
+<li>检验包含所需数据的新表</li>
+<li>重命名旧表（如确定可删除）</li>
+<li>用旧表的名字命名新表</li>
+<li>根据需要重新创建触发器、存储过程、索引和外键</li>
+</ul>
+<blockquote>
+<p>使用alter table之前最好备份。</p>
+</blockquote>
+<h2 id="删除表"><a href="#删除表" class="headerlink" title="删除表"></a>删除表</h2><p>删除整个表直接使用<code>drop table </code>即可</p>
+<h2 id="重命名表"><a href="#重命名表" class="headerlink" title="重命名表"></a>重命名表</h2><p>使用<code>rename table ... to ....</code>即可</p>
+<hr>
+<h2 id="22、使用视图"><a href="#22、使用视图" class="headerlink" title="22、使用视图"></a>22、使用视图</h2><h2 id="视图"><a href="#视图" class="headerlink" title="视图"></a>视图</h2><p>视图是虚拟的表，只包含使用时动态检索数据的查询。</p>
+<p>下面这个select将会从三个表中检索数据</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129225423265.png" alt="image-20211129225423265"></p>
+<p>而视图就是将整个查询包装成一个名为productcustomers的虚拟表：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129225527900.png" alt="image-20211129225527900"></p>
+<h3 id="为什么使用视图"><a href="#为什么使用视图" class="headerlink" title="为什么使用视图"></a>为什么使用视图</h3><ul>
+<li>重用sql语句</li>
+<li>简化复杂的sql语句</li>
+<li>使用表的组成成分而非表</li>
+<li>保护数据</li>
+<li>更改数据格式和表示</li>
+</ul>
+<p>在视图创建之后，可以对视图执行基本与表相同的操作。最重要的是知道视图本身不包含数据，他们返回的数据是从其他表中检索出来的。</p>
+<h3 id="视图的规则和限制"><a href="#视图的规则和限制" class="headerlink" title="视图的规则和限制"></a>视图的规则和限制</h3><ul>
+<li>与表一样，视图需要唯一命名</li>
+<li>可以创建无数视图</li>
+<li>为了创建视图需要足够的权限</li>
+<li>视图可以嵌套</li>
+<li>order by可以用在视图之中，但是如果从该视图检索数据select也函数order by，那么视图中的order将被覆盖</li>
+<li>视图不能索引，也不能有关联的触发器和默认值</li>
+<li>视图可以和表一起使用。</li>
+</ul>
+<h2 id="使用视图"><a href="#使用视图" class="headerlink" title="使用视图"></a>使用视图</h2><ul>
+<li>视图采用create view来创建</li>
+<li>使用show create view viewname来查看创建视图的语句</li>
+<li>用drop删除视图。drop view viewname</li>
+<li>更新视图时可以先删除后创建，也可以直接用create or replace view。</li>
+</ul>
+<h3 id="利用视图简化复杂的联结"><a href="#利用视图简化复杂的联结" class="headerlink" title="利用视图简化复杂的联结"></a>利用视图简化复杂的联结</h3><p><img src="/2021/11/28/MySQL-3/image-20211129233151199.png" alt="image-20211129233151199"></p>
+<p>这条语句将创建一个视图，联结三个表。使用select * 来查看这个视图</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129233209950.png" alt="image-20211129233209950"></p>
+<p>接下来可以直接在这个视图之中查找：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129233258100.png" alt="image-20211129233258100"></p>
+<blockquote>
+<p>视图完全可以理解为一个虚拟的表</p>
+</blockquote>
+<h3 id="用视图重新格式化检索出的数据"><a href="#用视图重新格式化检索出的数据" class="headerlink" title="用视图重新格式化检索出的数据"></a>用视图重新格式化检索出的数据</h3><p>一般的格式化：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129233527620.png" alt="image-20211129233527620"></p>
+<p>如果我们需要利用这个格式的记过可以直接使用视图：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129233621450.png" alt="image-20211129233621450"></p>
+<h3 id="用视图过滤掉不想要的数据"><a href="#用视图过滤掉不想要的数据" class="headerlink" title="用视图过滤掉不想要的数据"></a>用视图过滤掉不想要的数据</h3><p><img src="/2021/11/28/MySQL-3/image-20211129233830007.png" alt="image-20211129233830007"></p>
+<h3 id="使用视图与计算字段"><a href="#使用视图与计算字段" class="headerlink" title="使用视图与计算字段"></a>使用视图与计算字段</h3><p><img src="/2021/11/28/MySQL-3/image-20211129233936294.png" alt="image-20211129233936294"></p>
+<p>我们将以上查询转换为视图：</p>
+<p><img src="/2021/11/28/MySQL-3/image-20211129234122493.png" alt="image-20211129234122493"></p>
+<h3 id="更新视图"><a href="#更新视图" class="headerlink" title="更新视图"></a>更新视图</h3><p>一般情况下视图可以被更新，但是更新视图也将更新起数据来源表。</p>
+<p>但是如果MySQL不能正确的确定被更新的基数据，则不允许更新。这意味着如果视图定义中有以下操作，那么不能进行更新：</p>
+<ul>
+<li>分组（group和having）</li>
+<li>联结</li>
+<li>子查询</li>
+<li>并</li>
+<li>聚集函数</li>
+<li>distinct</li>
+<li>导出（计算）列</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Charlie</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://charlieblog.top/2021/11/28/MySQL-3/">https://charlieblog.top/2021/11/28/MySQL-3/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://charlieblog.top" target="_blank">CodeSpace</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MySQL/">MySQL</a></div><div class="post_share"><div class="social-share" data-image="/2021/11/28/MySQL-3/Como-ver-las-consultas-que-se-estan-ejecutando-en-MySQL-professor-falken.com_.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button button--animated"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.png" target="_blank"><img class="post-qr-code-img" src="/img/wechat.png" alt="wechat"/></a><div class="post-qr-code-desc">wechat</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="alipay"/></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/2021/11/27/MySQL-2/"><img class="prev-cover" src="/2021/11/27/MySQL-2/Como-ver-las-consultas-que-se-estan-ejecutando-en-MySQL-professor-falken.com_.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">MySQL(2)</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/11/26/MySQL-1/" title="MySQL(1)"><img class="cover" src="/2021/11/26/MySQL-1/Como-ver-las-consultas-que-se-estan-ejecutando-en-MySQL-professor-falken.com_.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-26</div><div class="title">MySQL(1)</div></div></a></div><div><a href="/2021/11/27/MySQL-2/" title="MySQL(2)"><img class="cover" src="/2021/11/27/MySQL-2/Como-ver-las-consultas-que-se-estan-ejecutando-en-MySQL-professor-falken.com_.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-27</div><div class="title">MySQL(2)</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%A1%A8%E5%88%AB%E5%90%8D"><span class="toc-number">1.</span> <span class="toc-text">使用表别名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E4%B8%8D%E7%94%A8%E7%B1%BB%E5%9E%8B%E7%9A%84%E8%81%94%E7%BB%93"><span class="toc-number">2.</span> <span class="toc-text">使用不用类型的联结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E8%81%94%E7%BB%93"><span class="toc-number">2.1.</span> <span class="toc-text">自联结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E7%84%B6%E8%81%94%E7%BB%93"><span class="toc-number">2.2.</span> <span class="toc-text">自然联结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%96%E9%83%A8%E8%81%94%E7%BB%93"><span class="toc-number">2.3.</span> <span class="toc-text">外部联结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%B8%A6%E8%81%9A%E9%9B%86%E5%87%BD%E6%95%B0%E7%9A%84%E8%81%94%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">使用带聚集函数的联结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%81%94%E7%BB%93%E5%92%8C%E8%81%94%E7%BB%93%E6%9D%A1%E4%BB%B6"><span class="toc-number">4.</span> <span class="toc-text">使用联结和联结条件</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BB%84%E5%90%88%E6%9F%A5%E8%AF%A2"><span class="toc-number"></span> <span class="toc-text">组合查询</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E7%BB%84%E5%90%88%E6%9F%A5%E8%AF%A2"><span class="toc-number">1.</span> <span class="toc-text">创建组合查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8union%E6%93%8D%E4%BD%9C%E7%AC%A6"><span class="toc-number">1.1.</span> <span class="toc-text">使用union操作符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#union%E8%A7%84%E5%88%99"><span class="toc-number">1.2.</span> <span class="toc-text">union规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%85%E5%90%AB%E6%88%96%E8%80%85%E5%8F%96%E6%B6%88%E9%87%8D%E5%A4%8D%E7%9A%84%E8%A1%8C"><span class="toc-number">1.3.</span> <span class="toc-text">包含或者取消重复的行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E7%BB%84%E5%90%88%E6%9F%A5%E8%AF%A2%E7%BB%93%E6%9E%9C%E6%8E%92%E5%BA%8F"><span class="toc-number">1.4.</span> <span class="toc-text">对组合查询结果排序</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%A8%E6%96%87%E6%9C%AC%E6%90%9C%E7%B4%A2"><span class="toc-number"></span> <span class="toc-text">全文本搜索</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E5%85%A8%E6%96%87%E6%9C%AC%E6%90%9C%E7%B4%A2"><span class="toc-number">1.</span> <span class="toc-text">理解全文本搜索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%85%A8%E6%96%87%E6%9C%AC%E6%90%9C%E7%B4%A2"><span class="toc-number">2.</span> <span class="toc-text">使用全文本搜索</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E7%94%A8%E5%85%A8%E6%96%87%E6%9C%AC%E6%90%9C%E7%B4%A2%E6%94%AF%E6%8C%81"><span class="toc-number">2.1.</span> <span class="toc-text">启用全文本搜索支持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E8%A1%8C%E5%85%A8%E6%96%87%E6%9C%AC%E6%90%9C%E7%B4%A2"><span class="toc-number">2.2.</span> <span class="toc-text">进行全文本搜索</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%9F%A5%E8%AF%A2%E6%89%A9%E5%B1%95"><span class="toc-number">2.3.</span> <span class="toc-text">使用查询扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%83%E5%B0%94%E6%96%87%E6%9C%AC%E6%90%9C%E7%B4%A2"><span class="toc-number">2.4.</span> <span class="toc-text">布尔文本搜索</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E"><span class="toc-number">2.5.</span> <span class="toc-text">使用说明</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#19%E3%80%81%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE"><span class="toc-number"></span> <span class="toc-text">19、插入数据</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E5%AE%8C%E6%95%B4%E7%9A%84%E8%A1%8C"><span class="toc-number">1.</span> <span class="toc-text">插入完整的行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E5%A4%9A%E4%B8%AA%E8%A1%8C"><span class="toc-number">2.</span> <span class="toc-text">插入多个行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E6%A3%80%E7%B4%A2%E5%87%BA%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="toc-number">3.</span> <span class="toc-text">插入检索出的数据</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E5%92%8C%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE"><span class="toc-number"></span> <span class="toc-text">更新和删除数据</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE"><span class="toc-number">1.</span> <span class="toc-text">更新数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE"><span class="toc-number">2.</span> <span class="toc-text">删除数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E5%92%8C%E5%88%A0%E9%99%A4%E7%9A%84%E5%8E%9F%E5%88%99"><span class="toc-number">3.</span> <span class="toc-text">更新和删除的原则</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#21%E3%80%81%E5%88%9B%E5%BB%BA%E5%92%8C%E6%93%8D%E7%BA%B5%E8%A1%A8"><span class="toc-number"></span> <span class="toc-text">21、创建和操纵表</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E8%A1%A8"><span class="toc-number">1.</span> <span class="toc-text">创建表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A8%E5%88%9B%E5%BB%BA%E5%9F%BA%E7%A1%80"><span class="toc-number">1.1.</span> <span class="toc-text">表创建基础</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8null%E5%80%BC"><span class="toc-number">1.2.</span> <span class="toc-text">使用null值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E9%94%AE%E5%86%8D%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.3.</span> <span class="toc-text">主键再介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8auto-increment"><span class="toc-number">1.4.</span> <span class="toc-text">使用auto_increment</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%87%E5%AE%9A%E9%BB%98%E8%AE%A4%E5%80%BC"><span class="toc-number">1.5.</span> <span class="toc-text">指定默认值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E6%93%8E%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.6.</span> <span class="toc-text">引擎类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E8%A1%A8"><span class="toc-number">2.</span> <span class="toc-text">更新表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E8%A1%A8"><span class="toc-number">3.</span> <span class="toc-text">删除表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%91%BD%E5%90%8D%E8%A1%A8"><span class="toc-number">4.</span> <span class="toc-text">重命名表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22%E3%80%81%E4%BD%BF%E7%94%A8%E8%A7%86%E5%9B%BE"><span class="toc-number">5.</span> <span class="toc-text">22、使用视图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%86%E5%9B%BE"><span class="toc-number">6.</span> <span class="toc-text">视图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E8%A7%86%E5%9B%BE"><span class="toc-number">6.1.</span> <span class="toc-text">为什么使用视图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%86%E5%9B%BE%E7%9A%84%E8%A7%84%E5%88%99%E5%92%8C%E9%99%90%E5%88%B6"><span class="toc-number">6.2.</span> <span class="toc-text">视图的规则和限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%A7%86%E5%9B%BE"><span class="toc-number">7.</span> <span class="toc-text">使用视图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E8%A7%86%E5%9B%BE%E7%AE%80%E5%8C%96%E5%A4%8D%E6%9D%82%E7%9A%84%E8%81%94%E7%BB%93"><span class="toc-number">7.1.</span> <span class="toc-text">利用视图简化复杂的联结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E8%A7%86%E5%9B%BE%E9%87%8D%E6%96%B0%E6%A0%BC%E5%BC%8F%E5%8C%96%E6%A3%80%E7%B4%A2%E5%87%BA%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="toc-number">7.2.</span> <span class="toc-text">用视图重新格式化检索出的数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E8%A7%86%E5%9B%BE%E8%BF%87%E6%BB%A4%E6%8E%89%E4%B8%8D%E6%83%B3%E8%A6%81%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="toc-number">7.3.</span> <span class="toc-text">用视图过滤掉不想要的数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%A7%86%E5%9B%BE%E4%B8%8E%E8%AE%A1%E7%AE%97%E5%AD%97%E6%AE%B5"><span class="toc-number">7.4.</span> <span class="toc-text">使用视图与计算字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E8%A7%86%E5%9B%BE"><span class="toc-number">7.5.</span> <span class="toc-text">更新视图</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Charlie</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>if (document.getElementsByClassName('mermaid').length) {
+  if (window.mermaidJsLoad) mermaid.init()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(() => {
+      window.mermaidJsLoad = true
+      mermaid.initialize({
+        theme: 'default',
+      })
+      false && mermaid.init()
+    })
+  }
+}</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
